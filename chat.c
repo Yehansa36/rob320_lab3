@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
     UserMessage request_msg = {0};
     // TODO: Initialize a UserMessage struct with the request opcode
     request_msg.opcode = 0; //request
-    strcopy(request_msg.user.name, name);
-    strcopy(request_msg.user.address, public_ip);
+    strcpy(request_msg.user.name, name);
+    strcpy(request_msg.user.address, public_ip);
 
     uint8_t* request_data;
     // TODO: Encode the UserMessage struct into a byte array
