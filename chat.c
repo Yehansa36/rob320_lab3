@@ -32,28 +32,44 @@ int main(int argc, char *argv[]) {
     int discovery_fd;
     // TODO: Create a socket file descriptor for the discovery server
     //       use AF_INET for ipv4 and SOCK_STREAM for TCP
-    
+    discovery_fd = socket(AF_INET, SOCK_STREAM, 0);
     // TODO: Set the socket to non-blocking mode
+    fcntl(discovery_fd, F_SETFL, O_NONBLOCK);
 
     struct sockaddr_in discovery_address;
     // TODO: Initialize the sockaddr_in struct for the discovery server
+    memset(&discovery_address, 0, sizeof(discovery_address));
+    discovery_address.sin_family = AF_INET;
+    discovery_address.sin_port = htons(DISCOVERY_PORT);
+    inet_pton(AF_INET, discovery_server_ip, &discovery_address.sin_addr);
 
     int status;
     // TODO: Connect to the discovery server (use connect_until_success)
-
+    status = connect_until_success(discovery_fd, &discovery_address);
+    if (status != 0) {
+        close(discovery_fd);
+        return 1;
+    }
     UserMessage request_msg = {0};
     // TODO: Initialize a UserMessage struct with the request opcode
+    request_msg.opcode = 0; //request
+    strcopy(request_msg.user.name, name);
+    strcopy(request_msg.user.address, public_ip);
 
     uint8_t* request_data;
     // TODO: Encode the UserMessage struct into a byte array
+    request_data = encode_user_message(&request_msg);
 
     // TODO: Send the UserMessage to the discovery server (use send_until_success)
+    send_until_success(discovery_fd, request_data, sizeof(UserMessage));
 
     uint8_t chatters_data[sizeof(ChattersMessage)] = {0};
     // TODO: Receive a ChattersMessage from discovery server (use recv_until_success)
+    recv_until_success(discovery_fd, chatters_data, sizeof(ChattersMessage));
 
     ChattersMessage* chatters_msg;
     // TODO: Decode the received ChattersMessage
+    chatters_msg = decode_chatters_message(chatters_data, sizeof(ChattersMessage));
 
     // Copy the decoded ChattersMessage to the global chatters variable
     memcpy(&chatters, chatters_msg, sizeof(ChattersMessage));
@@ -62,15 +78,18 @@ int main(int argc, char *argv[]) {
     int chatter_count = print_chatters(&chatters);
 
     // TODO: Close the connection to the discovery server
-
+    close(discovery_fd);
     // If there are no chatters, return
     if (chatter_count == 0) {
+        free(public_ip);
         return 0;
     }
 
     printf("Select a chatter to send a message to: ");
     int chatter_index;
     // TODO: Read chatter index from stdin
+    scanf("%d", &chatter_index);
+
 
     // If the chatter index is invalid, print an error message and return
     if (chatter_index < 0 || chatter_index >= 32) {
@@ -81,32 +100,52 @@ int main(int argc, char *argv[]) {
     int chat_fd;
     // TODO: Create a socket file descriptor for the selected chatter
     //       use AF_INET for ipv4 and SOCK_STREAM for TCP
-
+    chat_fd = socket(AF_INET, SOCK_STREAM, 0);
     // TODO: Set the socket to non-blocking mode
+    fcntl(chat_fd, F_SETFL, O_NONBLOCK);
 
     struct sockaddr_in chat_address;
     // TODO: Initialize the sockaddr_in struct for the selected chatter
+    memset(&chat_address, 0, sizeof(chat_address));
+    chat_address.sin_family = AF_INET;
+    chat_address.sin_port = htons(chatters.users[chatter_index].port);
+    inet_pton(AF_INET, chatters.users[chatter_index].address, &chat_address.sin_addr);
 
     // TODO: Connect to the selected chatter (use connect_until_success)
+    status = connect_until_success(chat_fd, &chat_address);
+    if (status != 0) {
+        close(chat_fd);
+        free(public_ip);
+        return 1;
+    }
 
     char buffer[256];
     printf("Enter message: ");
     clear_input_buffer();
     // TODO: Read message from stdin
+    fgets(buffer, sizeof(buffer), stdin);
 
     size_t len = strlen(buffer);
     buffer[len - 1] = '\0';
 
     ChatMessage chat_msg;
     // TODO: Initialize a ChatMessage struct with the user's name, message, and timestamp in microseconds
+    memset(&chat_msg, 0, sizeof(chat_msg));
+    chat_msg.timestamp = get_time_us();
+    strcpy(chat_msg.name, name);
+    strcpy(chat_msg.message, buffer);
+
 
     uint8_t* chat_data;
     // TODO: Encode the ChatMessage struct into a byte array
+    chat_data = encode_chat_message(&chat_msg);
 
     // TODO: Send the ChatMessage to the selected chatter (use send_until_success)
+    send_until_success(chat_fd, chat_data, sizeof(ChatMessage));
 
     // TODO: Close the connection to the selected chatter
-    
+    close(chat_fd);
     // Free the public IP address
     free(public_ip);
+    return 0;
 }
