@@ -126,7 +126,10 @@ int main(int argc, char *argv[]) {
     fgets(buffer, sizeof(buffer), stdin);
 
     size_t len = strlen(buffer);
-    buffer[len - 1] = '\0';
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+    }
+   
 
     ChatMessage chat_msg;
     // TODO: Initialize a ChatMessage struct with the user's name, message, and timestamp in microseconds
