@@ -145,20 +145,32 @@ int main(int argc, char* argv[]) {
     ctrl_c_pressed = 0;
 
     // TODO: Create a socket file descriptor for the discovery server
-
+    discovery_fd = socket(AF_INET, SOCK_STREAM, 0);
     // TODO: Set the socket to non-blocking mode
-
+    fcntl(discovery_fd, F_SETFL, O_NONBLOCK);
     // TODO: Connect to the discovery server (use connect_until_success)
-    
+    status = connect_until_success(discovery_fd, &discovery_address);
+    if (status != 0) {
+        free(public_ip);
+        return 1;
+    }
     UserMessage deregister_msg = {0};
     // TODO: Initialize a UserMessage struct with the deregister opcode
     //       and the user's port, address, and name
+    deregister_msg.opcode = 2;
+    deregister_msg.user.port = port;
+    strcpy(deregister_msg.user.address, public_ip);
+    strcpy(deregister_msg.user.name, name);
 
     uint8_t* deregister_data;
     // TODO: Encode the UserMessage struct into a byte array
-
+    deregister_data = encode_user_message(&deregister_msg);
     // TODO: Send the UserMessage to the discovery server (use send_until_success)
+    send_until_success(discovery_fd, deregister_data, sizeof(UserMessage));
 
+    close(discovery_fd);
+    close(server_fd);
+    
     // Free the public_ip string
     free(public_ip);
 }
