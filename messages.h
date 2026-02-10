@@ -51,8 +51,8 @@ int print_chatters(ChattersMessage* msg) {
 uint8_t* encode_chat_message(ChatMessage* msg) {
     // TODO: Cast the ChatMessage pointer to a uint8_t pointer so that the
     //       message can be transported as bytes
+    return (uint8_t*) msg;
     
-    return NULL;
 }
 
 ChatMessage* decode_chat_message(uint8_t* data, size_t len) {
@@ -60,15 +60,18 @@ ChatMessage* decode_chat_message(uint8_t* data, size_t len) {
     //       message can be read as a ChatMessage struct
     //       If the length of the data is not equal to the size of the
     //       ChatMessage struct, return NULL
+    if (len != sizeof(ChatMessage)) {
+        return NULL;
+    }
     
-    return NULL;
+    return (ChatMessage*) data;
 }
 
 uint8_t* encode_user_message(UserMessage* msg) {
     // TODO: Cast the UserMessage pointer to a uint8_t pointer so that the
     //       message can be transported as bytes
-    
-    return NULL;
+    return (uint8_t*) msg;
+    //return NULL;
 }
 
 UserMessage* decode_user_message(uint8_t* data, size_t len) {
@@ -76,15 +79,18 @@ UserMessage* decode_user_message(uint8_t* data, size_t len) {
     //       message can be read as a UserMessage struct
     //       If the length of the data is not equal to the size of the
     //       UserMessage struct, return NULL
-    
-    return NULL;
+    if (len != sizeof(UserMessage)) {
+        return NULL;
+    }
+    return (UserMessage*) data;
 }
 
 uint8_t* encode_chatters_message(ChattersMessage* msg) {
     // TODO: Cast the ChattersMessage pointer to a uint8_t pointer so that the
     //       message can be transported as bytes
     
-    return NULL;
+    //return NULL;
+    return (uint8_t*) msg;
 }
 
 ChattersMessage* decode_chatters_message(uint8_t* data, size_t len) {
@@ -93,6 +99,11 @@ ChattersMessage* decode_chatters_message(uint8_t* data, size_t len) {
     //       If the length of the data is not equal to the size of the
     //       ChattersMessage struct, return NULL
     
-    return NULL;
+    //return NULL;
+    if (len != sizeof(ChattersMessage)) {
+        return NULL;
+    }
+    return (ChattersMessage*) data;
 }
+
 
