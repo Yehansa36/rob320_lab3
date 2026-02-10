@@ -68,7 +68,7 @@ int connect_until_success(int fd, struct sockaddr_in* address) {
                 // TODO: Handle the case where the connection is in progress
                 //       (errno is EALREADY or EINPROGRESS)
                 // Hint: Just sleep for a bit and try again
-                sleep(1);
+                usleep(10000);
                 continue;
             }
             else if (errno == EISCONN) {
@@ -101,7 +101,7 @@ int accept_until_success(int fd, int* client_fd) {
                 // TODO: Handle the case where the connection is in progress or no clients are available
                 //       (errno is EAGAIN or EWOULDBLOCK)
                 // Hint: Just sleep for a bit and try again
-                sleep(1);
+                usleep(10000);
                 continue;
             }
             else {
@@ -129,7 +129,7 @@ int recv_until_success(int fd, uint8_t* buffer, size_t len) {
                 // TODO: Handle the case where no data is available
                 //       (errno is EAGAIN or EWOULDBLOCK)
                 // Hint: Just sleep for a bit and try again
-                sleep(1);
+                usleep(10000);
                 continue;
                 
             } 
@@ -163,7 +163,7 @@ int send_until_success(int fd, uint8_t* buffer, size_t len) {
                 // TODO: Handle the case where the operation would block
                 //       (errno is EAGAIN or EWOULDBLOCK)
                 // Hint: Just sleep for a bit and try again
-                sleep(1);
+                usleep(10000);
                 continue;
             } 
             else {
